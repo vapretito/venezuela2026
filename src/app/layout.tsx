@@ -18,9 +18,9 @@ export const metadata: Metadata = {
   description:
     "Registro solidario de personas desaparecidas tras el terremoto en Caracas.",
   icons: {
-    icon: "/bandera/Flag.svg",
-    shortcut: "/bandera/Flag.svg",
-    apple: "/bandera/Flag.svg",
+    icon: "/bandera/flag.avif",
+    shortcut: "/bandera/flag.avif",
+    apple: "/bandera/flag.avif",
   },
 };
 

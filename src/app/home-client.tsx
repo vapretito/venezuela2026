@@ -4,6 +4,11 @@ import { PutBlobResult } from "@vercel/blob";
 import { upload } from "@vercel/blob/client";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import styles from "./page.module.css";
+import {
+  HospitalAdmission,
+  hospitalAdmissions,
+} from "@/lib/hospital-admissions";
+import { hospitalGalleries } from "@/lib/hospital-galleries";
 import { PersonStatus, ReportInput, ReportRecord } from "@/lib/report-types";
 
 const MAX_PHOTO_SIZE_BYTES = 4 * 1024 * 1024;
@@ -29,6 +34,11 @@ const statusLabels: Record<PersonStatus, string> = {
 
 export default function HomeClient() {
   const [reports, setReports] = useState<ReportRecord[]>([]);
+  const [activeTab, setActiveTab] = useState<
+    "registros" | "hospitales" | "fotos-hospitales"
+  >(
+    "registros"
+  );
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [form, setForm] = useState<ReportInput>(emptyForm);
@@ -36,6 +46,8 @@ export default function HomeClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [hospitalQuery, setHospitalQuery] = useState("");
+  const [hospitalGalleryQuery, setHospitalGalleryQuery] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [selectedPhotoName, setSelectedPhotoName] = useState("");
   const [photoError, setPhotoError] = useState("");
@@ -83,6 +95,32 @@ export default function HomeClient() {
     }),
     [reports]
   );
+
+  const filteredHospitalAdmissions = useMemo(() => {
+    const normalizedQuery = hospitalQuery.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return hospitalAdmissions;
+    }
+
+    return hospitalAdmissions.filter((item: HospitalAdmission) =>
+      `${item.lastName} ${item.ci} ${item.origin} ${item.hospital} ${item.service}`
+        .toLowerCase()
+        .includes(normalizedQuery)
+    );
+  }, [hospitalQuery]);
+
+  const filteredHospitalGalleries = useMemo(() => {
+    const normalizedQuery = hospitalGalleryQuery.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return hospitalGalleries;
+    }
+
+    return hospitalGalleries.filter((hospital) =>
+      hospital.name.toLowerCase().includes(normalizedQuery)
+    );
+  }, [hospitalGalleryQuery]);
 
   function updateField(name: keyof ReportInput, value: string) {
     setForm((current) => ({ ...current, [name]: value }));
@@ -163,8 +201,7 @@ export default function HomeClient() {
         throw new Error(data.error ?? "No se pudo guardar el registro.");
       }
 
-      const report = data.report;
-      setReports((current) => [report, ...current]);
+      setReports((current) => [data.report!, ...current]);
       setForm(emptyForm);
       setSelectedPhoto(null);
       setSelectedPhotoName("");
@@ -229,9 +266,9 @@ export default function HomeClient() {
                 className={styles.navFlag}
                 src="/bandera/flag.avif"
                 alt="Bandera de Venezuela"
-              /> 
+              />
               <div>
-                <p className={styles.eyebrow}>Venezuela 2026</p>
+                <p className={styles.eyebrow}>Venezuela Te Busca · Caracas 2026</p>
                 <p className={styles.heroMiniText}>
                   Registro ciudadano de personas desaparecidas
                 </p>
@@ -274,118 +311,259 @@ export default function HomeClient() {
       </header>
 
       <main className={styles.main}>
-        <section className={styles.filters}>
-          <input
-            type="search"
-            placeholder="Buscar por nombre, apellido, cedula o lugar..."
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-          <select
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value)}
+        <section className={styles.tabsBar}>
+          <button
+            type="button"
+            className={`${styles.tabButton} ${
+              activeTab === "registros" ? styles.tabButtonActive : ""
+            }`}
+            onClick={() => setActiveTab("registros")}
           >
-            <option value="todos">Todos los estados</option>
-            <option value="buscando">Buscando</option>
-            <option value="en_verificacion">Verificando</option>
-            <option value="encontrada">Encontrada</option>
-          </select>
+            Personas registradas
+          </button>
+          <button
+            type="button"
+            className={`${styles.tabButton} ${
+              activeTab === "hospitales" ? styles.tabButtonActive : ""
+            }`}
+            onClick={() => setActiveTab("hospitales")}
+          >
+            Ingresos en hospitales
+          </button>
+          <button
+            type="button"
+            className={`${styles.tabButton} ${
+              activeTab === "fotos-hospitales" ? styles.tabButtonActive : ""
+            }`}
+            onClick={() => setActiveTab("fotos-hospitales")}
+          >
+            Fotos por hospital
+          </button>
         </section>
 
-        {message ? <p className={styles.message}>{message}</p> : null}
+        {activeTab === "registros" ? (
+          <>
+            <section className={styles.filters}>
+              <input
+                type="search"
+                placeholder="Buscar por nombre, apellido, cedula o lugar..."
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+              >
+                <option value="todos">Todos los estados</option>
+                <option value="buscando">Buscando</option>
+                <option value="en_verificacion">Verificando</option>
+                <option value="encontrada">Encontrada</option>
+              </select>
+            </section>
 
-        <section className={styles.content}>
-          <section className={styles.listCard}>
+            {message ? <p className={styles.message}>{message}</p> : null}
+
+            <section className={styles.content}>
+              <section className={styles.listCard}>
+                <div className={styles.cardHeader}>
+                  <p className={styles.cardEyebrow}>Lista publica</p>
+                  <h2>Personas registradas</h2>
+                  <p>
+                    Si tienes datos confirmados, comparte la informacion con la
+                    familia.
+                  </p>
+                </div>
+
+                {isLoading ? (
+                  <p className={styles.helperText}>Cargando registros...</p>
+                ) : filteredReports.length === 0 ? (
+                  <p className={styles.helperText}>
+                    No hay registros todavia o no hay coincidencias con tu
+                    busqueda.
+                  </p>
+                ) : (
+                  <div className={styles.reportList}>
+                    {filteredReports.map((report) => (
+                      <article className={styles.reportItem} key={report.id}>
+                        {report.photoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            className={styles.reportPhoto}
+                            src={report.photoUrl}
+                            alt={`${report.firstName} ${report.lastName}`}
+                          />
+                        ) : null}
+
+                        <div className={styles.reportTop}>
+                          <div>
+                            <h3>
+                              {report.firstName} {report.lastName}
+                            </h3>
+                            <p>
+                              {report.age || "Edad no indicada"} · {report.gender}
+                            </p>
+                          </div>
+                          <span
+                            className={`${styles.status} ${styles[report.status]}`}
+                          >
+                            {statusLabels[report.status]}
+                          </span>
+                        </div>
+
+                        <dl className={styles.reportMeta}>
+                          <div>
+                            <dt>Cedula</dt>
+                            <dd>{report.documentId || "No informada"}</dd>
+                          </div>
+                          <div>
+                            <dt>Ultimo lugar visto</dt>
+                            <dd>{report.lastSeen}</dd>
+                          </div>
+                          <div>
+                            <dt>Descripcion</dt>
+                            <dd>
+                              {report.description || "Sin descripcion adicional."}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>Contacto</dt>
+                            <dd>
+                              {report.contactName} ·{" "}
+                              <a
+                                href={`tel:${report.contactPhone.replace(
+                                  /\s+/g,
+                                  ""
+                                )}`}
+                              >
+                                {report.contactPhone}
+                              </a>
+                            </dd>
+                          </div>
+                        </dl>
+
+                        {report.status !== "encontrada" ? (
+                          <button
+                            type="button"
+                            className={styles.foundButton}
+                            disabled={updatingIds.includes(report.id)}
+                            onClick={() => void markAsFound(report.id)}
+                          >
+                            {updatingIds.includes(report.id)
+                              ? "Actualizando..."
+                              : "✓ Marcar como localizada"}
+                          </button>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </section>
+          </>
+        ) : activeTab === "hospitales" ? (
+          <section className={styles.hospitalSection}>
             <div className={styles.cardHeader}>
-              <p className={styles.cardEyebrow}>Lista publica</p>
-              <h2>Personas registradas</h2>
+              <p className={styles.cardEyebrow}>Hospitales</p>
+              <h2>Ingresos en hospitales</h2>
               <p>
-                Si tienes datos confirmados, comparte la informacion con la
-                familia.
+                Registros de personas ingresadas en hospitales tras el sismo,
+                con etiqueta clara de ubicacion hospitalaria.
               </p>
             </div>
 
-            {isLoading ? (
-              <p className={styles.helperText}>Cargando registros...</p>
-            ) : filteredReports.length === 0 ? (
-              <p className={styles.helperText}>
-                No hay registros todavia o no hay coincidencias con tu busqueda.
-              </p>
-            ) : (
-              <div className={styles.reportList}>
-                {filteredReports.map((report) => (
-                  <article className={styles.reportItem} key={report.id}>
-                    {report.photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        className={styles.reportPhoto}
-                        src={report.photoUrl}
-                        alt={`${report.firstName} ${report.lastName}`}
-                      />
-                    ) : null}
+            <div className={styles.hospitalSearchBar}>
+              <input
+                type="search"
+                placeholder="Buscar por apellido, cedula, procedencia u hospital..."
+                value={hospitalQuery}
+                onChange={(event) => setHospitalQuery(event.target.value)}
+              />
+              <span>{filteredHospitalAdmissions.length} registros</span>
+            </div>
 
-                    <div className={styles.reportTop}>
-                      <div>
-                        <h3>
-                          {report.firstName} {report.lastName}
-                        </h3>
-                        <p>
-                          {report.age || "Edad no indicada"} · {report.gender}
-                        </p>
-                      </div>
-                      <span
-                        className={`${styles.status} ${styles[report.status]}`}
-                      >
-                        {statusLabels[report.status]}
-                      </span>
-                    </div>
-
-                    <dl className={styles.reportMeta}>
-                      <div>
-                        <dt>Cedula</dt>
-                        <dd>{report.documentId || "No informada"}</dd>
-                      </div>
-                      <div>
-                        <dt>Ultimo lugar visto</dt>
-                        <dd>{report.lastSeen}</dd>
-                      </div>
-                      <div>
-                        <dt>Descripcion</dt>
-                        <dd>{report.description || "Sin descripcion adicional."}</dd>
-                      </div>
-                      <div>
-                        <dt>Contacto</dt>
-                        <dd>
-                          {report.contactName} ·{" "}
-                          <a href={`tel:${report.contactPhone.replace(/\s+/g, "")}`}>
-                            {report.contactPhone}
-                          </a>
-                        </dd>
-                      </div>
-                    </dl>
-
-                    {report.status !== "encontrada" ? (
-                      <button
-                        type="button"
-                        className={styles.foundButton}
-                        disabled={updatingIds.includes(report.id)}
-                        onClick={() => void markAsFound(report.id)}
-                      >
-                        {updatingIds.includes(report.id)
-                          ? "Actualizando..."
-                          : "✓ Marcar como localizada"}
-                      </button>
-                    ) : null}
-                  </article>
-                ))}
-              </div>
-            )}
+            <div className={styles.tableWrap}>
+              <table className={styles.hospitalTable}>
+                <thead>
+                  <tr>
+                    <th>Num</th>
+                    <th>Apellidos</th>
+                    <th>CI</th>
+                    <th>Edad</th>
+                    <th>Sexo</th>
+                    <th>Procedencia</th>
+                    <th>Ingresado en hospital</th>
+                    <th>Actualizacion</th>
+                    <th>Servicio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredHospitalAdmissions.map((item) => (
+                    <tr key={`${item.num}-${item.lastName}-${item.ci}`}>
+                      <td>{item.num}</td>
+                      <td>{item.lastName}</td>
+                      <td>{item.ci || "-"}</td>
+                      <td>{item.age || "-"}</td>
+                      <td>{item.sex || "-"}</td>
+                      <td>{item.origin || "-"}</td>
+                      <td>{item.hospital || "-"}</td>
+                      <td>{item.updatedAt || "-"}</td>
+                      <td>{item.service || "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
-        </section>
+        ) : (
+          <section className={styles.hospitalSection}>
+            <div className={styles.cardHeader}>
+              <p className={styles.cardEyebrow}>Hospitales</p>
+              <h2>Fotos por hospital</h2>
+              <p>
+                Apartado visual por hospital, separado de las fichas, para ver
+                rapidamente las imagenes recibidas desde cada centro.
+              </p>
+            </div>
+
+            <div className={styles.hospitalSearchBar}>
+              <input
+                type="search"
+                placeholder="Buscar fotos por hospital..."
+                value={hospitalGalleryQuery}
+                onChange={(event) => setHospitalGalleryQuery(event.target.value)}
+              />
+              <span>{filteredHospitalGalleries.length} hospitales</span>
+            </div>
+
+            <div className={styles.galleryHospitals}>
+              {filteredHospitalGalleries.map((hospital) => (
+                <section className={styles.galleryHospitalCard} key={hospital.slug}>
+                  <div className={styles.galleryHospitalHeader}>
+                    <h3>{hospital.name.replace("Carre?o", "Carreño")}</h3>
+                    <span>{hospital.images.length} fotos</span>
+                  </div>
+
+                  <div className={styles.galleryGrid}>
+                    {hospital.images.map((imageSrc, index) => (
+                      <figure className={styles.galleryFigure} key={imageSrc}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          className={styles.galleryImage}
+                          src={imageSrc}
+                          alt={`${hospital.name} foto ${index + 1}`}
+                        />
+                      </figure>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
 
       <footer className={styles.footer}>
-        <p>Venezuela 2026· Iniciativa solidaria · Terremoto 2026</p>
+        <p>Venezuela Te Busca · Iniciativa solidaria · Terremoto 2026</p>
         <p>Esta plataforma es gratuita y sin fines de lucro.</p>
         <p>
           Los datos publicados son responsabilidad exclusiva de quien los envia.

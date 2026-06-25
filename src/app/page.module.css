@@ -177,6 +177,85 @@
   margin-top: 1.5rem;
 }
 
+.tabsBar {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.tabButton {
+  padding: 0.85rem 1.1rem;
+  border: 1px solid rgba(92, 71, 46, 0.18);
+  background: #ffffff;
+  color: #3d3024;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tabButtonActive {
+  background: #c9a35f;
+  color: #1e1812;
+  border-color: rgba(201, 163, 95, 0.5);
+}
+
+.hospitalSection {
+  margin-top: 1.6rem;
+  padding: 1.4rem;
+  border: 1px solid rgba(92, 71, 46, 0.18);
+  background: #ffffff;
+  color: #251f19;
+}
+
+.galleryHospitals {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.galleryHospitalCard {
+  padding: 1rem;
+  border: 1px solid rgba(92, 71, 46, 0.18);
+  background: #fffdf9;
+}
+
+.galleryHospitalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.galleryHospitalHeader h3 {
+  color: #1b1611;
+  font-family: var(--font-display);
+  font-size: 2rem;
+}
+
+.galleryHospitalHeader span {
+  color: #6b5846;
+  font-weight: 700;
+}
+
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.galleryFigure {
+  overflow: hidden;
+  border: 1px solid rgba(92, 71, 46, 0.18);
+  background: #f4ece2;
+}
+
+.galleryImage {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  display: block;
+}
+
 .formCard,
 .listCard {
   padding: 1.4rem;
@@ -384,6 +463,61 @@
   font-weight: 700;
 }
 
+.hospitalSearchBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.hospitalSearchBar input {
+  width: min(520px, 100%);
+  padding: 0.9rem 1rem;
+  border: 1px solid #ccb99d;
+  background: #fffefb;
+  color: #251f19;
+  font: inherit;
+}
+
+.hospitalSearchBar span {
+  color: #584739;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid rgba(92, 71, 46, 0.18);
+}
+
+.hospitalTable {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+  background: #ffffff;
+  color: #1d1712;
+  font-size: 0.92rem;
+}
+
+.hospitalTable th,
+.hospitalTable td {
+  padding: 0.65rem 0.7rem;
+  border: 1px solid rgba(92, 71, 46, 0.18);
+  text-align: left;
+  vertical-align: top;
+}
+
+.hospitalTable th {
+  background: #f3e2c3;
+  color: #1e1812;
+  font-weight: 800;
+}
+
+.hospitalTable tbody tr:nth-child(even) {
+  background: #fcfaf6;
+}
+
 .footer {
   width: 100%;
   margin: 3rem 0 0;
@@ -442,6 +576,10 @@
 
 @media (max-width: 980px) {
   .reportList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .galleryGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -508,10 +646,37 @@
     font-size: 0.98rem;
   }
 
+  .tabsBar {
+    flex-direction: column;
+  }
+
   .filters,
   .listCard,
-  .formCard {
+  .formCard,
+  .hospitalSection {
     padding: 0.9rem;
+  }
+
+  .hospitalSearchBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hospitalSearchBar input {
+    width: 100%;
+  }
+
+  .galleryHospitalHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .galleryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .galleryImage {
+    height: 220px;
   }
 
   .reportList {
