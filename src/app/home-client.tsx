@@ -373,7 +373,7 @@ export default function HomeClient() {
                       >
                         {updatingIds.includes(report.id)
                           ? "Actualizando..."
-                          : "Marcar como localizada"}
+                          : "✓ Marcar como localizada"}
                       </button>
                     ) : null}
                   </article>
