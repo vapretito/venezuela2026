@@ -249,7 +249,7 @@ export default function HomeClient() {
 
         <div className={styles.heroInner}>
           <div className={styles.heroContentBox}>
-            <h1>Registro simple para buscar personas tras el terremoto.</h1>
+            <h1>Registro para buscar personas tras el terremoto.</h1>
             <p className={styles.heroText}>
               Publica un nombre, revisa la lista y comparte informacion
               confirmada.
