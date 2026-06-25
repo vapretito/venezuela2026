@@ -229,7 +229,7 @@ export default function HomeClient() {
                 className={styles.navFlag}
                 src="/bandera/flag.avif"
                 alt="Bandera de Venezuela"
-              />
+              /> 
               <div>
                 <p className={styles.eyebrow}>Venezuela Te Busca · Caracas 2026</p>
                 <p className={styles.heroMiniText}>
