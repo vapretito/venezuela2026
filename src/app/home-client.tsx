@@ -231,7 +231,7 @@ export default function HomeClient() {
                 alt="Bandera de Venezuela"
               /> 
               <div>
-                <p className={styles.eyebrow}>Venezuela Te Busca · Caracas 2026</p>
+                <p className={styles.eyebrow}>Venezuela 2026</p>
                 <p className={styles.heroMiniText}>
                   Registro ciudadano de personas desaparecidas
                 </p>
@@ -385,7 +385,7 @@ export default function HomeClient() {
       </main>
 
       <footer className={styles.footer}>
-        <p>Venezuela Te Busca · Iniciativa solidaria · Terremoto 2026</p>
+        <p>Venezuela 2026· Iniciativa solidaria · Terremoto 2026</p>
         <p>Esta plataforma es gratuita y sin fines de lucro.</p>
         <p>
           Los datos publicados son responsabilidad exclusiva de quien los envia.
