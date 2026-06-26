@@ -8,6 +8,8 @@ import {
   HospitalAdmission,
   hospitalAdmissions,
 } from "@/lib/hospital-admissions";
+import { hospitalAdmissionsHucReport } from "@/lib/hospital-admissions-huc-report";
+import { hospitalAdmissionsSupplemental } from "@/lib/hospital-admissions-supplemental";
 import { hospitalGalleries } from "@/lib/hospital-galleries";
 import { PersonStatus, ReportInput, ReportRecord } from "@/lib/report-types";
 
@@ -32,13 +34,21 @@ const statusLabels: Record<PersonStatus, string> = {
   encontrada: "Encontrada",
 };
 
+function formatDisplayText(value: string) {
+  return value
+    .replaceAll("Carre?o", "Carreño")
+    .replaceAll("CirugÃ­a", "Cirugía")
+    .replaceAll("NIÃ‘OS", "NIÑOS")
+    .replaceAll("CASTAÃ‘EDA", "CASTAÑEDA")
+    .replaceAll("CASTAÃ‘O", "CASTAÑO")
+    .replaceAll("SOLORZANO AMAR Ã‘O", "SOLORZANO AMARIÑO");
+}
+
 export default function HomeClient() {
   const [reports, setReports] = useState<ReportRecord[]>([]);
   const [activeTab, setActiveTab] = useState<
     "registros" | "hospitales" | "fotos-hospitales"
-  >(
-    "registros"
-  );
+  >("registros");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [form, setForm] = useState<ReportInput>(emptyForm);
@@ -47,11 +57,21 @@ export default function HomeClient() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [hospitalQuery, setHospitalQuery] = useState("");
+  const [hospitalFilter, setHospitalFilter] = useState("todos");
   const [hospitalGalleryQuery, setHospitalGalleryQuery] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [selectedPhotoName, setSelectedPhotoName] = useState("");
   const [photoError, setPhotoError] = useState("");
   const [updatingIds, setUpdatingIds] = useState<number[]>([]);
+
+  const allHospitalAdmissions = useMemo(
+    () => [
+      ...hospitalAdmissions,
+      ...hospitalAdmissionsSupplemental,
+      ...hospitalAdmissionsHucReport,
+    ],
+    []
+  );
 
   useEffect(() => {
     async function loadReports() {
@@ -96,19 +116,44 @@ export default function HomeClient() {
     [reports]
   );
 
+  const hospitalOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(allHospitalAdmissions.map((item) => formatDisplayText(item.hospital)))
+      ).sort((a, b) => a.localeCompare(b)),
+    [allHospitalAdmissions]
+  );
+
+  const hospitalCount = hospitalOptions.length;
+
+  const hospitalTotals = useMemo(
+    () =>
+      hospitalOptions.map((hospital) => ({
+        hospital,
+        total: allHospitalAdmissions.filter(
+          (item) => formatDisplayText(item.hospital) === hospital
+        ).length,
+      })),
+    [allHospitalAdmissions, hospitalOptions]
+  );
+
   const filteredHospitalAdmissions = useMemo(() => {
     const normalizedQuery = hospitalQuery.trim().toLowerCase();
 
-    if (!normalizedQuery) {
-      return hospitalAdmissions;
-    }
+    return allHospitalAdmissions.filter((item: HospitalAdmission) => {
+      const matchesHospital =
+        hospitalFilter === "todos" ||
+        formatDisplayText(item.hospital) === hospitalFilter;
 
-    return hospitalAdmissions.filter((item: HospitalAdmission) =>
-      `${item.lastName} ${item.ci} ${item.origin} ${item.hospital} ${item.service}`
-        .toLowerCase()
-        .includes(normalizedQuery)
-    );
-  }, [hospitalQuery]);
+      const matchesQuery =
+        normalizedQuery.length === 0 ||
+        `${item.lastName} ${item.ci} ${item.origin} ${item.hospital} ${item.service}`
+          .toLowerCase()
+          .includes(normalizedQuery);
+
+      return matchesHospital && matchesQuery;
+    });
+  }, [allHospitalAdmissions, hospitalFilter, hospitalQuery]);
 
   const filteredHospitalGalleries = useMemo(() => {
     const normalizedQuery = hospitalGalleryQuery.trim().toLowerCase();
@@ -471,14 +516,42 @@ export default function HomeClient() {
               </p>
             </div>
 
+            <div className={styles.hospitalSummary}>
+              <article className={styles.hospitalSummaryCard}>
+                <strong>{allHospitalAdmissions.length}</strong>
+                <span>Total reportados</span>
+              </article>
+              {hospitalTotals.map((item) => (
+                <article className={styles.hospitalSummaryCard} key={item.hospital}>
+                  <strong>{item.total}</strong>
+                  <span>{item.hospital}</span>
+                </article>
+              ))}
+            </div>
+
             <div className={styles.hospitalSearchBar}>
-              <input
-                type="search"
-                placeholder="Buscar por apellido, cedula, procedencia u hospital..."
-                value={hospitalQuery}
-                onChange={(event) => setHospitalQuery(event.target.value)}
-              />
-              <span>{filteredHospitalAdmissions.length} registros</span>
+              <div className={styles.hospitalSearchControls}>
+                <input
+                  type="search"
+                  placeholder="Buscar por apellido, cedula, procedencia u hospital..."
+                  value={hospitalQuery}
+                  onChange={(event) => setHospitalQuery(event.target.value)}
+                />
+                <select
+                  value={hospitalFilter}
+                  onChange={(event) => setHospitalFilter(event.target.value)}
+                >
+                  <option value="todos">Todos los hospitales</option>
+                  {hospitalOptions.map((hospital) => (
+                    <option key={hospital} value={hospital}>
+                      {hospital}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <span>
+                {filteredHospitalAdmissions.length} registros · {hospitalCount} hospitales
+              </span>
             </div>
 
             <div className={styles.tableWrap}>
@@ -500,14 +573,14 @@ export default function HomeClient() {
                   {filteredHospitalAdmissions.map((item) => (
                     <tr key={`${item.num}-${item.lastName}-${item.ci}`}>
                       <td>{item.num}</td>
-                      <td>{item.lastName}</td>
+                      <td>{formatDisplayText(item.lastName)}</td>
                       <td>{item.ci || "-"}</td>
                       <td>{item.age || "-"}</td>
-                      <td>{item.sex || "-"}</td>
-                      <td>{item.origin || "-"}</td>
-                      <td>{item.hospital || "-"}</td>
-                      <td>{item.updatedAt || "-"}</td>
-                      <td>{item.service || "-"}</td>
+                      <td>{formatDisplayText(item.sex || "-")}</td>
+                      <td>{formatDisplayText(item.origin || "-")}</td>
+                      <td>{formatDisplayText(item.hospital || "-")}</td>
+                      <td>{formatDisplayText(item.updatedAt || "-")}</td>
+                      <td>{formatDisplayText(item.service || "-")}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -539,7 +612,7 @@ export default function HomeClient() {
               {filteredHospitalGalleries.map((hospital) => (
                 <section className={styles.galleryHospitalCard} key={hospital.slug}>
                   <div className={styles.galleryHospitalHeader}>
-                    <h3>{hospital.name.replace("Carre?o", "Carreño")}</h3>
+                    <h3>{hospital.name}</h3>
                     <span>{hospital.images.length} fotos</span>
                   </div>
 
