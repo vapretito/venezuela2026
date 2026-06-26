@@ -7,7 +7,7 @@ export type HospitalGallery = {
 export const hospitalGalleries: HospitalGallery[] = [
   {
     slug: "perez-carreno",
-    name: "Hospital Perez Carreño",
+    name: "Hospital Perez Carreno",
     images: ["/hospital-galleries/perez-carreno/perez-carreno-1.jpeg"],
   },
   {
@@ -26,6 +26,16 @@ export const hospitalGalleries: HospitalGallery[] = [
       "/hospital-galleries/luciani-caracas/luciani-caracas-2.jpeg",
       "/hospital-galleries/luciani-caracas/luciani-caracas-3.jpeg",
       "/hospital-galleries/luciani-caracas/luciani-caracas-4.jpeg",
+    ],
+  },
+  {
+    slug: "campo-golf-playa-los-cocos",
+    name: "Campo de golf Playa Los Cocos",
+    images: [
+      "/hospital-galleries/campo-golf-playa-los-cocos/IMG-20260626-WA0003.jpg",
+      "/hospital-galleries/campo-golf-playa-los-cocos/IMG-20260626-WA0004.jpg",
+      "/hospital-galleries/campo-golf-playa-los-cocos/IMG-20260626-WA0005.jpg",
+      "/hospital-galleries/campo-golf-playa-los-cocos/IMG-20260626-WA0009.jpg",
     ],
   },
 ];

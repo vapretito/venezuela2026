@@ -403,7 +403,7 @@ export default function HomeClient() {
             }`}
             onClick={() => setActiveTab("fotos-hospitales")}
           >
-            Fotos por hospital
+            Fotos de redes sociales
           </button>
         </section>
 
@@ -664,22 +664,23 @@ export default function HomeClient() {
         ) : (
           <section className={styles.hospitalSection}>
             <div className={styles.cardHeader}>
-              <p className={styles.cardEyebrow}>Hospitales</p>
-              <h2>Fotos por hospital</h2>
+              <p className={styles.cardEyebrow}>Redes sociales</p>
+              <h2>Fotos de listados extraidos de redes sociales</h2>
               <p>
-                Apartado visual por hospital, separado de las fichas, para ver
-                rapidamente las imagenes recibidas desde cada centro.
+                Apartado visual de listados recibidos por hospital u otros
+                lugares, separado de las fichas, para revisar rapidamente las
+                imagenes compartidas.
               </p>
             </div>
 
             <div className={styles.hospitalSearchBar}>
               <input
                 type="search"
-                placeholder="Buscar fotos por hospital..."
+                placeholder="Buscar fotos por hospital o lugar..."
                 value={hospitalGalleryQuery}
                 onChange={(event) => setHospitalGalleryQuery(event.target.value)}
               />
-              <span>{filteredHospitalGalleries.length} hospitales</span>
+              <span>{filteredHospitalGalleries.length} listados</span>
             </div>
 
             <div className={styles.galleryHospitals}>
