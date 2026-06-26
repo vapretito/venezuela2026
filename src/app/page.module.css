@@ -173,6 +173,35 @@
   color: #4f3d2d;
 }
 
+.externalSearch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.85rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(92, 71, 46, 0.16);
+  background: rgba(255, 255, 255, 0.92);
+  color: #3d3024;
+}
+
+.externalSearch p {
+  margin: 0;
+}
+
+.externalSearchButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid rgba(201, 163, 95, 0.45);
+  background: #c9a35f;
+  color: #1f1812;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 .content {
   margin-top: 1.5rem;
 }
@@ -422,10 +451,15 @@
 }
 
 .reportItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   height: 100%;
   padding: 1rem;
   border: 1px solid rgba(111, 87, 60, 0.18);
   background: #ffffff;
+  text-align: left;
+  cursor: pointer;
 }
 
 .reportPhoto {
@@ -446,6 +480,8 @@
 .reportTop h3 {
   color: #17120f;
   font-size: 1.8rem;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
 }
 
 .status {
@@ -474,17 +510,41 @@
 .reportMeta {
   display: grid;
   gap: 0.8rem;
-  margin-top: 1rem;
+  margin-top: 0.2rem;
 }
 
 .reportMeta div {
   display: grid;
   gap: 0.2rem;
+  min-width: 0;
+}
+
+.reportMeta dd {
+  overflow-wrap: anywhere;
+}
+
+.reportDescription {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
 }
 
 .reportMeta a {
   color: #17120f;
   font-weight: 700;
+}
+
+.detailsButton {
+  width: 100%;
+  margin-top: auto;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(92, 71, 46, 0.18);
+  background: #fffaf2;
+  color: #251f19;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .hospitalSearchBar {
@@ -593,6 +653,63 @@
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.22);
 }
 
+.reportDetailBody {
+  display: grid;
+  gap: 1rem;
+  padding: 0 1.4rem 1.4rem;
+}
+
+.reportDetailPhoto {
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+  border: 1px solid rgba(111, 87, 60, 0.18);
+}
+
+.reportDetailSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.reportDetailSummary p {
+  color: #584739;
+}
+
+.reportDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.reportDetailGrid div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.reportDetailGrid dt {
+  color: #c9b48e;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.reportDetailGrid dd {
+  color: #584739;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.reportDetailGrid a {
+  color: #17120f;
+  font-weight: 700;
+}
+
+.reportDetailFull {
+  grid-column: 1 / -1;
+}
+
 .modalHeader {
   display: flex;
   align-items: start;
@@ -687,6 +804,15 @@
     flex-direction: column;
   }
 
+  .externalSearch {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .externalSearchButton {
+    width: 100%;
+  }
+
   .filters,
   .listCard,
   .formCard,
@@ -768,5 +894,14 @@
   .modalCard {
     width: 100%;
     max-height: 100vh;
+  }
+
+  .reportDetailSummary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .reportDetailGrid {
+    grid-template-columns: 1fr;
   }
 }

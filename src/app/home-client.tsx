@@ -47,6 +47,19 @@ function formatDisplayText(value: string) {
     .replaceAll("SOLORZANO AMAR ?????O", "SOLORZANO AMARI?O");
 }
 
+function hasCallablePhone(value: string) {
+  return value.replace(/\D/g, "").length >= 7;
+}
+
+function summarizeText(value: string, maxLength = 140) {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, maxLength).trimEnd()}...`;
+}
+
 export default function HomeClient() {
   const [reports, setReports] = useState<ReportRecord[]>([]);
   const [activeTab, setActiveTab] = useState<
@@ -66,6 +79,9 @@ export default function HomeClient() {
   const [selectedPhotoName, setSelectedPhotoName] = useState("");
   const [photoError, setPhotoError] = useState("");
   const [updatingIds, setUpdatingIds] = useState<number[]>([]);
+  const [selectedReport, setSelectedReport] = useState<ReportRecord | null>(
+    null
+  );
 
   const allHospitalAdmissions = useMemo(
     () => [
@@ -318,7 +334,7 @@ export default function HomeClient() {
                 alt="Bandera de Venezuela"
               />
               <div>
-                <p className={styles.eyebrow}>Venezuela Te Busca · Caracas 2026</p>
+                <p className={styles.eyebrow}>Venezuela  2026</p>
                 <p className={styles.heroMiniText}>
                   Registro ciudadano de personas desaparecidas
                 </p>
@@ -411,6 +427,20 @@ export default function HomeClient() {
               </select>
             </section>
 
+            <div className={styles.externalSearch}>
+              <p>
+                Si no encontraste aqui, puedes fijarte en esta otra pagina.
+              </p>
+              <a
+                href="https://venezuelatebusca.com/"
+                target="_blank"
+                rel="noreferrer"
+                className={styles.externalSearchButton}
+              >
+                Ver Venezuela Te Busca
+              </a>
+            </div>
+
             {message ? <p className={styles.message}>{message}</p> : null}
 
             <section className={styles.content}>
@@ -434,7 +464,19 @@ export default function HomeClient() {
                 ) : (
                   <div className={styles.reportList}>
                     {filteredReports.map((report) => (
-                      <article className={styles.reportItem} key={report.id}>
+                      <article
+                        className={styles.reportItem}
+                        key={report.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setSelectedReport(report)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            setSelectedReport(report);
+                          }
+                        }}
+                      >
                         {report.photoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -450,7 +492,7 @@ export default function HomeClient() {
                               {report.firstName} {report.lastName}
                             </h3>
                             <p>
-                              {report.age || "Edad no indicada"} · {report.gender}
+                              {report.age || "Edad no indicada"} ? {report.gender}
                             </p>
                           </div>
                           <span
@@ -467,26 +509,39 @@ export default function HomeClient() {
                           </div>
                           <div>
                             <dt>Ultimo lugar visto</dt>
-                            <dd>{report.lastSeen}</dd>
+                            <dd title={report.lastSeen}>
+                              {summarizeText(report.lastSeen, 58)}
+                            </dd>
                           </div>
                           <div>
                             <dt>Descripcion</dt>
-                            <dd>
-                              {report.description || "Sin descripcion adicional."}
+                            <dd
+                              className={styles.reportDescription}
+                              title={
+                                report.description ||
+                                "Sin descripcion adicional."
+                              }
+                            >
+                              {summarizeText(
+                                report.description ||
+                                  "Sin descripcion adicional.",
+                                150
+                              )}
                             </dd>
                           </div>
                           <div>
                             <dt>Contacto</dt>
                             <dd>
-                              {report.contactName} ·{" "}
-                              <a
-                                href={`tel:${report.contactPhone.replace(
-                                  /\s+/g,
-                                  ""
-                                )}`}
-                              >
-                                {report.contactPhone}
-                              </a>
+                              {report.contactName} ?{" "}
+                              {hasCallablePhone(report.contactPhone) ? (
+                                <a
+                                  href={`tel:${report.contactPhone.replace(/\s+/g, "")}`}
+                                >
+                                  {report.contactPhone}
+                                </a>
+                              ) : (
+                                <span>{report.contactPhone}</span>
+                              )}
                             </dd>
                           </div>
                         </dl>
@@ -496,13 +551,27 @@ export default function HomeClient() {
                             type="button"
                             className={styles.foundButton}
                             disabled={updatingIds.includes(report.id)}
-                            onClick={() => void markAsFound(report.id)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              void markAsFound(report.id);
+                            }}
                           >
                             {updatingIds.includes(report.id)
                               ? "Actualizando..."
-                              : "✓ Marcar como localizada"}
+                              : "? Marcar como localizada"}
                           </button>
                         ) : null}
+
+                        <button
+                          type="button"
+                          className={styles.detailsButton}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setSelectedReport(report);
+                          }}
+                        >
+                          Ver ficha completa
+                        </button>
                       </article>
                     ))}
                   </div>
@@ -641,7 +710,7 @@ export default function HomeClient() {
       </main>
 
       <footer className={styles.footer}>
-        <p>Venezuela Te Busca · Iniciativa solidaria · Terremoto 2026</p>
+        <p>Venezuela  · Iniciativa solidaria · Terremoto 2026</p>
         <p>Esta plataforma es gratuita y sin fines de lucro.</p>
         <p>
           Los datos publicados son responsabilidad exclusiva de quien los envia.
@@ -655,6 +724,114 @@ export default function HomeClient() {
           (Cantv fijo)
         </p>
       </footer>
+
+      {selectedReport ? (
+        <div
+          className={styles.modalBackdrop}
+          onClick={() => setSelectedReport(null)}
+          role="presentation"
+        >
+          <div
+            className={styles.modalCard}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="report-detail-title"
+          >
+            <div className={styles.modalHeader}>
+              <div className={styles.cardHeader}>
+                <p className={styles.cardEyebrow}>Ficha tecnica</p>
+                <h2 id="report-detail-title">
+                  {selectedReport.firstName} {selectedReport.lastName}
+                </h2>
+                <p>
+                  Datos completos del caso reportado, con informacion ampliada
+                  para facilitar la identificacion.
+                </p>
+              </div>
+              <button
+                className={styles.closeButton}
+                type="button"
+                onClick={() => setSelectedReport(null)}
+                aria-label="Cerrar ficha"
+              >
+                x
+              </button>
+            </div>
+
+            <div className={styles.reportDetailBody}>
+              {selectedReport.photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  className={styles.reportDetailPhoto}
+                  src={selectedReport.photoUrl}
+                  alt={`${selectedReport.firstName} ${selectedReport.lastName}`}
+                />
+              ) : null}
+
+              <div className={styles.reportDetailSummary}>
+                <span
+                  className={`${styles.status} ${styles[selectedReport.status]}`}
+                >
+                  {statusLabels[selectedReport.status]}
+                </span>
+                <p>
+                  {selectedReport.age || "Edad no indicada"} ? {selectedReport.gender}
+                </p>
+              </div>
+
+              <dl className={styles.reportDetailGrid}>
+                <div>
+                  <dt>Cedula</dt>
+                  <dd>{selectedReport.documentId || "No informada"}</dd>
+                </div>
+                <div>
+                  <dt>Ultimo lugar visto</dt>
+                  <dd>{selectedReport.lastSeen}</dd>
+                </div>
+                <div className={styles.reportDetailFull}>
+                  <dt>Descripcion completa</dt>
+                  <dd>
+                    {selectedReport.description ||
+                      "Sin descripcion adicional."}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Nombre del contacto</dt>
+                  <dd>{selectedReport.contactName}</dd>
+                </div>
+                <div>
+                  <dt>Telefono o referencia</dt>
+                  <dd>
+                    {hasCallablePhone(selectedReport.contactPhone) ? (
+                      <a
+                        href={`tel:${selectedReport.contactPhone.replace(/\s+/g, "")}`}
+                      >
+                        {selectedReport.contactPhone}
+                      </a>
+                    ) : (
+                      <span>{selectedReport.contactPhone}</span>
+                    )}
+                  </dd>
+                </div>
+              </dl>
+
+              {selectedReport.status !== "encontrada" ? (
+                <button
+                  type="button"
+                  className={styles.foundButton}
+                  disabled={updatingIds.includes(selectedReport.id)}
+                  onClick={() => void markAsFound(selectedReport.id)}
+                >
+                  {updatingIds.includes(selectedReport.id)
+                    ? "Actualizando..."
+                    : "? Marcar como localizada"}
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {isModalOpen ? (
         <div
