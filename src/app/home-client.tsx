@@ -341,7 +341,7 @@ export default function HomeClient() {
               </div>
             </div>
             <button
-              className={styles.heroButton}
+              className={styles.heroButton} 
               type="button"
               onClick={() => setIsModalOpen(true)}
             >
