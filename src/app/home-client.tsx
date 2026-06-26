@@ -8,7 +8,9 @@ import {
   HospitalAdmission,
   hospitalAdmissions,
 } from "@/lib/hospital-admissions";
+import { hospitalAdmissionsGoogleSheet } from "@/lib/hospital-admissions-google-sheet";
 import { hospitalAdmissionsHucReport } from "@/lib/hospital-admissions-huc-report";
+import { hospitalAdmissionsOeste } from "@/lib/hospital-admissions-oeste";
 import { hospitalAdmissionsSupplemental } from "@/lib/hospital-admissions-supplemental";
 import { hospitalGalleries } from "@/lib/hospital-galleries";
 import { PersonStatus, ReportInput, ReportRecord } from "@/lib/report-types";
@@ -36,12 +38,13 @@ const statusLabels: Record<PersonStatus, string> = {
 
 function formatDisplayText(value: string) {
   return value
-    .replaceAll("Carre?o", "Carreño")
-    .replaceAll("CirugÃ­a", "Cirugía")
-    .replaceAll("NIÃ‘OS", "NIÑOS")
-    .replaceAll("CASTAÃ‘EDA", "CASTAÑEDA")
-    .replaceAll("CASTAÃ‘O", "CASTAÑO")
-    .replaceAll("SOLORZANO AMAR Ã‘O", "SOLORZANO AMARIÑO");
+    .replaceAll("Carre??o", "Carre?o")
+    .replaceAll("Carre?o", "Carre?o")
+    .replaceAll("Cirug????a", "Cirug?a")
+    .replaceAll("NI?????OS", "NI?OS")
+    .replaceAll("CASTA?????EDA", "CASTA?EDA")
+    .replaceAll("CASTA?????O", "CASTA?O")
+    .replaceAll("SOLORZANO AMAR ?????O", "SOLORZANO AMARI?O");
 }
 
 export default function HomeClient() {
@@ -67,8 +70,10 @@ export default function HomeClient() {
   const allHospitalAdmissions = useMemo(
     () => [
       ...hospitalAdmissions,
+      ...hospitalAdmissionsGoogleSheet,
       ...hospitalAdmissionsSupplemental,
       ...hospitalAdmissionsHucReport,
+      ...hospitalAdmissionsOeste,
     ],
     []
   );
